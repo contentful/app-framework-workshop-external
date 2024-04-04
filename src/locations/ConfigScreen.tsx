@@ -12,6 +12,9 @@ const ConfigScreen = () => {
   const sdk = useSDK<ConfigAppSDK>();
 
   const [contentTypes, setContentTypes] = useState<ContentTypeProps[]>([]);
+  const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>(
+    []
+  );
 
   const onConfigure = useCallback(async () => {
     // This method will be called when a user clicks on "Install"
@@ -52,6 +55,15 @@ const ConfigScreen = () => {
       const ctResponse = await sdk.cma.contentType.getMany({});
       setContentTypes(ctResponse.items);
 
+      const state = await sdk.app.getCurrentState();
+      if (state) {
+        setSelectedContentTypes(
+          Object.entries(state.EditorInterface)
+            .filter(([_, editorInterface]) => !!editorInterface.sidebar)
+            .map(([contentTypeId]) => contentTypeId)
+        );
+      }
+
       // Once preparation has finished, call `setReady` to hide
       // the loading screen and present the app to a user.
       sdk.app.setReady();
@@ -65,8 +77,17 @@ const ConfigScreen = () => {
     >
       {contentTypes.map((contentType) => (
         <Checkbox
+          key={contentType.sys.id}
           id={`ct-${contentType.sys.id}`}
           name={`ct-${contentType.sys.id}`}
+          isChecked={selectedContentTypes.includes(contentType.sys.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedContentTypes([...selectedContentTypes, contentType.sys.id]);
+            } else {
+              setSelectedContentTypes(selectedContentTypes.filter((id) => id !== contentType.sys.id));
+            }
+          }}
         >
           {contentType.name}
         </Checkbox>
