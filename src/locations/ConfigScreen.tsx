@@ -1,4 +1,7 @@
-import { ConfigAppSDK } from "@contentful/app-sdk";
+import {
+  ConfigAppSDK,
+  type OnConfigureHandlerReturn,
+} from "@contentful/app-sdk";
 import { Checkbox, Flex } from "@contentful/f36-components";
 import { useSDK } from "@contentful/react-apps-toolkit";
 import { ContentTypeProps } from "contentful-management";
@@ -16,23 +19,33 @@ const ConfigScreen = () => {
     []
   );
 
-  const onConfigure = useCallback(async () => {
-    // This method will be called when a user clicks on "Install"
-    // or "Save" in the configuration screen.
-    // for more details see https://www.contentful.com/developers/docs/extensibility/ui-extensions/sdk-reference/#register-an-app-configuration-hook
+  const onConfigure =
+    useCallback(async (): Promise<OnConfigureHandlerReturn> => {
+      // This method will be called when a user clicks on "Install"
+      // or "Save" in the configuration screen.
+      // for more details see https://www.contentful.com/developers/docs/extensibility/ui-extensions/sdk-reference/#register-an-app-configuration-hook
 
-    // Get current the state of EditorInterface and other entities
-    // related to this app installation
-    const currentState = await sdk.app.getCurrentState();
+      // Get current the state of EditorInterface and other entities
+      // related to this app installation
+      const currentState = await sdk.app.getCurrentState();
 
-    return {
-      // Parameters to be persisted as the app configuration.
-      parameters,
-      // In case you don't want to submit any update to app
-      // locations, you can just pass the currentState as is
-      targetState: currentState,
-    };
-  }, [parameters, sdk]);
+      return {
+        parameters,
+        targetState: {
+          EditorInterface: {
+            ...currentState?.EditorInterface,
+            ...Object.fromEntries(
+              contentTypes.map((contentType) => [
+                contentType.sys.id,
+                selectedContentTypes.includes(contentType.sys.id)
+                  ? { sidebar: { position: 0 } }
+                  : {},
+              ])
+            ),
+          },
+        },
+      };
+    }, [parameters, sdk, contentTypes, selectedContentTypes]);
 
   useEffect(() => {
     // `onConfigure` allows to configure a callback to be
@@ -83,9 +96,14 @@ const ConfigScreen = () => {
           isChecked={selectedContentTypes.includes(contentType.sys.id)}
           onChange={(e) => {
             if (e.target.checked) {
-              setSelectedContentTypes([...selectedContentTypes, contentType.sys.id]);
+              setSelectedContentTypes([
+                ...selectedContentTypes,
+                contentType.sys.id,
+              ]);
             } else {
-              setSelectedContentTypes(selectedContentTypes.filter((id) => id !== contentType.sys.id));
+              setSelectedContentTypes(
+                selectedContentTypes.filter((id) => id !== contentType.sys.id)
+              );
             }
           }}
         >
