@@ -26,7 +26,9 @@ const Dialog = () => {
       {breeds.map((breed) => (
         <EntityListItem
           key={breed.id}
-          title={breed.name}
+          title={`${breed.name}${
+            sdk.parameters.invocation === breed.name ? " (selected)" : ""
+          }`}
           description={breed.description}
           onClick={() => sdk.close(breed.name)}
         />

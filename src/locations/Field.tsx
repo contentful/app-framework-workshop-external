@@ -15,6 +15,7 @@ const Field = () => {
         onClick={async () => {
           const selectedCat = await sdk.dialogs.openCurrentApp({
             title: "Select a cat",
+            parameters: sdk.field.getValue(),
           });
           sdk.field.setValue(selectedCat);
         }}
