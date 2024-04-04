@@ -1,17 +1,13 @@
-import { useAutoResizer, useFieldValue } from "@contentful/react-apps-toolkit";
+import { FieldAppSDK } from "@contentful/app-sdk";
+import { SingleLineEditor } from "@contentful/field-editor-single-line";
+import { useAutoResizer, useSDK } from "@contentful/react-apps-toolkit";
 
 const Field = () => {
-  const [text, setText] = useFieldValue<string>();
+  const sdk = useSDK<FieldAppSDK>();
 
   useAutoResizer();
 
-  return (
-    <input
-      type="text"
-      value={text ?? ""}
-      onChange={(e) => setText(e.target.value)}
-    />
-  );
+  return <SingleLineEditor field={sdk.field} locales={sdk.locales} />;
 };
 
 export default Field;
