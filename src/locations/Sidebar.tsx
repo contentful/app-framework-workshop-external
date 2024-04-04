@@ -1,16 +1,25 @@
-import { SidebarAppSDK } from '@contentful/app-sdk';
-import { Paragraph } from '@contentful/f36-components';
-import { /* useCMA, */ useSDK } from '@contentful/react-apps-toolkit';
+import { SidebarAppSDK } from "@contentful/app-sdk";
+import { Paragraph } from "@contentful/f36-components";
+import { useSDK } from "@contentful/react-apps-toolkit";
+import { useMemo, useState } from "react";
+
+const FIELD_ID = "text";
 
 const Sidebar = () => {
   const sdk = useSDK<SidebarAppSDK>();
-  /*
-     To use the cma, inject it as follows.
-     If it is not needed, you can remove the next line.
-  */
-  // const cma = useCMA();
+  const [text, setText] = useState<string | undefined>(
+    sdk.entry.fields[FIELD_ID].getValue()
+  );
 
-  return <Paragraph>Hello Sidebar Component (AppId: {sdk.ids.app})</Paragraph>;
+  useMemo(() => {
+    const unsubscribe = sdk.entry.fields[FIELD_ID].onValueChanged((value) => {
+      setText(value);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return <Paragraph>{(text ?? "").length} chars</Paragraph>;
 };
 
 export default Sidebar;
